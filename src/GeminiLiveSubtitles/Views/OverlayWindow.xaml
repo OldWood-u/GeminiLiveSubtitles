@@ -1,0 +1,265 @@
+<Window x:Class="GeminiLiveSubtitles.Views.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:GeminiLiveSubtitles.ViewModels"
+        xmlns:sub="clr-namespace:GeminiLiveSubtitles.Subtitles"
+        xmlns:loc="clr-namespace:GeminiLiveSubtitles.Localization"
+        d:DataContext="{d:DesignInstance vm:OverlayViewModel}"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="GeminiLiveSubtitles"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Topmost="True" ShowInTaskbar="False" ShowActivated="False"
+        ResizeMode="NoResize" MinWidth="360" MinHeight="96"
+        Width="980" Height="210">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <Style x:Key="PillButton" TargetType="Button">
+            <Setter Property="Background" Value="#26FFFFFF"/>
+            <Setter Property="Foreground" Value="#F0FFFFFF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="9,3"/>
+            <Setter Property="Margin" Value="3,0,0,0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#48FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#66FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Invisible resize thumb template -->
+        <Style x:Key="ResizeThumb" TargetType="Thumb">
+            <Setter Property="Background" Value="#01000000"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border Background="{TemplateBinding Background}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- Backdrop ALWAYS fills the entire window so it never disappears during silence -->
+    <Border x:Name="Backdrop" Background="{Binding BackgroundBrush}" CornerRadius="12"
+            BorderThickness="1" BorderBrush="#00FFFFFF"
+            PreviewMouseLeftButtonDown="Backdrop_PreviewMouseLeftButtonDown">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="BorderBrush" Value="#40FFFFFF"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+
+        <Grid>
+            <!-- Main content area -->
+            <Grid Margin="18,12,18,12">
+                <!-- Empty state / status hint when no subtitles yet -->
+                <TextBlock Text="{Binding StatusText}" Visibility="{Binding EmptyHintVisibility}"
+                           Foreground="#88FFFFFF" FontSize="14" FontFamily="{Binding FontFamily}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           TextAlignment="Center" IsHitTestVisible="False"/>
+
+                <!-- Rolling conversation history (no visible scrollbar; mouse wheel still scrolls) -->
+                <ScrollViewer x:Name="HistoryScroll" VerticalScrollBarVisibility="Hidden"
+                              HorizontalScrollBarVisibility="Disabled"
+                              PanningMode="VerticalOnly"
+                              PreviewMouseWheel="HistoryScroll_PreviewMouseWheel"
+                              ScrollChanged="HistoryScroll_ScrollChanged">
+                    <ItemsControl ItemsSource="{Binding Entries}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type sub:SubtitleEntry}">
+                                <!-- Pure, clean subtitle item without any colored box; animated on entry & update -->
+                                <Border x:Name="ItemCard" Padding="4,4" Margin="0,3" Background="Transparent"
+                                        RenderTransformOrigin="0.5,0.5"
+                                        Loaded="ItemCard_Loaded">
+                                    <Border.RenderTransform>
+                                        <TranslateTransform Y="0"/>
+                                    </Border.RenderTransform>
+
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Translated text -->
+                                        <TextBlock x:Name="TranslatedBlock" Grid.Row="0"
+                                                   Text="{Binding Translated, NotifyOnTargetUpdated=True}"
+                                                   TargetUpdated="SubtitleText_TargetUpdated"
+                                                   TextAlignment="{Binding DataContext.TextAlignment, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   FontFamily="{Binding DataContext.FontFamily, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   FontSize="{Binding DataContext.TranslatedFontSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   Foreground="{Binding DataContext.TranslatedBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   FontWeight="SemiBold" TextWrapping="Wrap">
+                                            <TextBlock.Effect>
+                                                <DropShadowEffect ShadowDepth="0" BlurRadius="6" Color="Black"
+                                                                  Opacity="{Binding DataContext.ShadowOpacity, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                            </TextBlock.Effect>
+                                        </TextBlock>
+
+                                        <!-- Original text -->
+                                        <TextBlock x:Name="OriginalBlock" Grid.Row="1"
+                                                   Text="{Binding Original, NotifyOnTargetUpdated=True}"
+                                                   TargetUpdated="SubtitleText_TargetUpdated"
+                                                   TextAlignment="{Binding DataContext.TextAlignment, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   FontFamily="{Binding DataContext.FontFamily, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   FontSize="{Binding DataContext.OriginalFontSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   Foreground="{Binding DataContext.OriginalBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   TextWrapping="Wrap" Margin="0,2,0,0">
+                                            <TextBlock.Effect>
+                                                <DropShadowEffect ShadowDepth="0" BlurRadius="5" Color="Black"
+                                                                  Opacity="{Binding DataContext.ShadowOpacity, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                            </TextBlock.Effect>
+                                        </TextBlock>
+                                    </Grid>
+                                </Border>
+
+                                <DataTemplate.Triggers>
+                                    <!-- Completed history lines bind to user-configurable HistoryOpacity, with smooth fade when retiring -->
+                                    <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="ItemCard"
+                                                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                                     From="4" To="0" Duration="0:0:0.32">
+                                                        <DoubleAnimation.EasingFunction>
+                                                            <CubicEase EasingMode="EaseOut"/>
+                                                        </DoubleAnimation.EasingFunction>
+                                                    </DoubleAnimation>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.EnterActions>
+                                        <Setter TargetName="ItemCard" Property="Opacity"
+                                                Value="{Binding DataContext.HistoryOpacity, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                        <Setter TargetName="TranslatedBlock" Property="FontWeight" Value="Normal"/>
+                                    </DataTrigger>
+                                    <Trigger SourceName="ItemCard" Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="ItemCard" Property="Opacity" Value="0.95"/>
+                                    </Trigger>
+
+                                    <!-- Swap order when user chooses OriginalFirst -->
+                                    <DataTrigger Binding="{Binding DataContext.IsOriginalFirst, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                        <Setter TargetName="OriginalBlock" Property="Grid.Row" Value="0"/>
+                                        <Setter TargetName="OriginalBlock" Property="Margin" Value="0,0,0,2"/>
+                                        <Setter TargetName="TranslatedBlock" Property="Grid.Row" Value="1"/>
+                                        <Setter TargetName="TranslatedBlock" Property="Margin" Value="0"/>
+                                    </DataTrigger>
+
+                                    <!-- Hide empty / disabled tracks -->
+                                    <DataTrigger Binding="{Binding HasOriginal}" Value="False">
+                                        <Setter TargetName="OriginalBlock" Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding HasTranslated}" Value="False">
+                                        <Setter TargetName="TranslatedBlock" Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding DataContext.ShowOriginal, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
+                                        <Setter TargetName="OriginalBlock" Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding DataContext.ShowTranslated, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
+                                        <Setter TargetName="TranslatedBlock" Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Transient status badge (top-left, auto-hides) -->
+                <Border Background="#AA000000" CornerRadius="6" Padding="8,3"
+                        HorizontalAlignment="Left" VerticalAlignment="Top" IsHitTestVisible="False"
+                        Visibility="{Binding IsStatusVisible, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="{Binding StatusText}" Foreground="#FFD6E8FF" FontSize="12"/>
+                </Border>
+
+                <!-- Hover-only floating mini toolbar (top-right, completely hidden when mouse leaves) -->
+                <Border x:Name="HoverToolbar" Background="#CC181B20" CornerRadius="8" Padding="6,4"
+                        BorderBrush="#33FFFFFF" BorderThickness="1"
+                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Opacity="0" IsHitTestVisible="False">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=Backdrop}" Value="True">
+                                    <Setter Property="Opacity" Value="1"/>
+                                    <Setter Property="IsHitTestVisible" Value="True"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Style="{StaticResource PillButton}" Content="{Binding RunButtonText}"
+                                ToolTip="{Binding Source={x:Static loc:Loc.Instance}, Path=[Tip_StartPause]}" Click="ToggleRun_Click"/>
+                        <Button Style="{StaticResource PillButton}" Content="{Binding OrderButtonText}"
+                                ToolTip="{Binding Source={x:Static loc:Loc.Instance}, Path=[Tip_Order]}" Click="ToggleOrder_Click"/>
+                        <Button Style="{StaticResource PillButton}" Content="{Binding AlignButtonText}"
+                                ToolTip="{Binding Source={x:Static loc:Loc.Instance}, Path=[Tip_Align]}" Click="ToggleAlign_Click"/>
+                        <Button Style="{StaticResource PillButton}" Content="{Binding Source={x:Static loc:Loc.Instance}, Path=[Btn_Clear]}"
+                                ToolTip="{Binding Source={x:Static loc:Loc.Instance}, Path=[Tip_Clear]}" Click="ClearHistory_Click"/>
+                        <Button Style="{StaticResource PillButton}" Content="{Binding Source={x:Static loc:Loc.Instance}, Path=[Btn_PassThrough]}"
+                                ToolTip="{Binding Source={x:Static loc:Loc.Instance}, Path=[Tip_PassThrough]}" Click="Lock_Click"/>
+                        <Button Style="{StaticResource PillButton}" Content="{Binding Source={x:Static loc:Loc.Instance}, Path=[Btn_Settings]}"
+                                ToolTip="{Binding Source={x:Static loc:Loc.Instance}, Path=[Tip_Settings]}" Click="Settings_Click"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Hover-only subtle corner grip visual indicator (bottom-right) -->
+            <Path Data="M 0,12 L 12,0 M 5,12 L 12,5 M 10,12 L 12,10"
+                  Stroke="#77FFFFFF" StrokeThickness="1.5"
+                  HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                  Margin="0,0,5,5" IsHitTestVisible="False">
+                <Path.Style>
+                    <Style TargetType="Path">
+                        <Setter Property="Opacity" Value="0"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsMouseOver, ElementName=Backdrop}" Value="True">
+                                <Setter Property="Opacity" Value="1"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Path.Style>
+            </Path>
+
+            <!-- 8-direction resize thumbs (edges & corners) -->
+            <Thumb Style="{StaticResource ResizeThumb}" Height="7" VerticalAlignment="Top" Margin="12,0"
+                   Cursor="SizeNS" Tag="T" DragDelta="Resize_DragDelta"/>
+            <Thumb Style="{StaticResource ResizeThumb}" Height="7" VerticalAlignment="Bottom" Margin="12,0"
+                   Cursor="SizeNS" Tag="B" DragDelta="Resize_DragDelta"/>
+            <Thumb Style="{StaticResource ResizeThumb}" Width="7" HorizontalAlignment="Left" Margin="0,12"
+                   Cursor="SizeWE" Tag="L" DragDelta="Resize_DragDelta"/>
+            <Thumb Style="{StaticResource ResizeThumb}" Width="7" HorizontalAlignment="Right" Margin="0,12"
+                   Cursor="SizeWE" Tag="R" DragDelta="Resize_DragDelta"/>
+
+            <Thumb Style="{StaticResource ResizeThumb}" Width="14" Height="14" HorizontalAlignment="Left" VerticalAlignment="Top"
+                   Cursor="SizeNWSE" Tag="TL" DragDelta="Resize_DragDelta"/>
+            <Thumb Style="{StaticResource ResizeThumb}" Width="14" Height="14" HorizontalAlignment="Right" VerticalAlignment="Top"
+                   Cursor="SizeNESW" Tag="TR" DragDelta="Resize_DragDelta"/>
+            <Thumb Style="{StaticResource ResizeThumb}" Width="14" Height="14" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                   Cursor="SizeNESW" Tag="BL" DragDelta="Resize_DragDelta"/>
+            <Thumb Style="{StaticResource ResizeThumb}" Width="16" Height="16" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                   Cursor="SizeNWSE" Tag="BR" DragDelta="Resize_DragDelta"/>
+        </Grid>
+    </Border>
+</Window>

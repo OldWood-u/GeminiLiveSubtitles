@@ -1,0 +1,271 @@
+<Window x:Class="GeminiLiveSubtitles.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:GeminiLiveSubtitles.ViewModels"
+        xmlns:loc="clr-namespace:GeminiLiveSubtitles.Localization"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance vm:SettingsViewModel}"
+        Title="{Binding [Settings_Title], Source={x:Static loc:Loc.Instance}}"
+        Width="640" Height="730"
+        MinWidth="580" MinHeight="540"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Microsoft YaHei UI" FontSize="13">
+    <Window.Resources>
+        <Style TargetType="TextBlock" x:Key="RowLabel">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,6,14,6"/>
+            <Setter Property="Opacity" Value="0.88"/>
+        </Style>
+        <Style TargetType="TextBlock" x:Key="SectionTitle">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+        <Style TargetType="Border" x:Key="Card">
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16,14"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#24808080"/>
+            <Setter Property="Background" Value="#10808080"/>
+        </Style>
+        <!-- Ensure generous height & balanced padding so Fluent controls never clip descenders -->
+        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="MinHeight" Value="34"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style TargetType="PasswordBox" BasedOn="{StaticResource {x:Type PasswordBox}}">
+            <Setter Property="MinHeight" Value="34"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+            <Setter Property="MinHeight" Value="34"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20,16,20,8">
+            <StackPanel>
+                <!-- Section 1: Translation & Layout -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="{Binding [Settings_Sec_Trans], Source={x:Static loc:Loc.Instance}}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Style="{StaticResource RowLabel}" Text="{Binding [Settings_UiLang], Source={x:Static loc:Loc.Instance}}"/>
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding UiLanguages}"
+                                      SelectedValuePath="Key" DisplayMemberPath="Value" SelectedValue="{Binding UiLanguage}"/>
+
+                            <TextBlock Grid.Row="1" Style="{StaticResource RowLabel}" Text="{Binding [Settings_TargetLang], Source={x:Static loc:Loc.Instance}}"/>
+                            <ComboBox Grid.Row="1" Grid.Column="1" IsEditable="True" ItemsSource="{Binding LanguageOptions}"
+                                      Text="{Binding TargetLanguage, UpdateSourceTrigger=PropertyChanged}"
+                                      ToolTip="{Binding [Settings_TargetLang_Tip], Source={x:Static loc:Loc.Instance}}"/>
+
+                            <TextBlock Grid.Row="2" Style="{StaticResource RowLabel}" Text="{Binding [Settings_DisplayMode], Source={x:Static loc:Loc.Instance}}"/>
+                            <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding DisplayModes}"
+                                      SelectedValuePath="Key" DisplayMemberPath="Value" SelectedValue="{Binding DisplayMode}"/>
+
+                            <TextBlock Grid.Row="3" Style="{StaticResource RowLabel}" Text="{Binding [Settings_Order], Source={x:Static loc:Loc.Instance}}"/>
+                            <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding SubtitleOrders}"
+                                      SelectedValuePath="Key" DisplayMemberPath="Value" SelectedValue="{Binding SubtitleOrder}"/>
+
+                            <TextBlock Grid.Row="4" Style="{StaticResource RowLabel}" Text="{Binding [Settings_Align], Source={x:Static loc:Loc.Instance}}"/>
+                            <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding SubtitleAlignments}"
+                                      SelectedValuePath="Key" DisplayMemberPath="Value" SelectedValue="{Binding SubtitleAlignment}"/>
+
+                            <TextBlock Grid.Row="5" Style="{StaticResource RowLabel}" Text="{Binding [Settings_HistoryMax], Source={x:Static loc:Loc.Instance}}"/>
+                            <Grid Grid.Row="5" Grid.Column="1" Margin="0,6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="56"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider Minimum="10" Maximum="500" TickFrequency="10" IsSnapToTickEnabled="True"
+                                        VerticalAlignment="Center" Value="{Binding MaxHistoryEntries}"/>
+                                <TextBlock Grid.Column="1" TextAlignment="Right" VerticalAlignment="Center"
+                                           Text="{Binding MaxHistoryEntries, StringFormat={}{0}}"/>
+                            </Grid>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Section 2: Visual Style (Live Preview) -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="{Binding [Settings_Sec_Appearance], Source={x:Static loc:Loc.Instance}}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Style="{StaticResource RowLabel}" Text="{Binding [Settings_Font], Source={x:Static loc:Loc.Instance}}"/>
+                            <ComboBox Grid.Column="1" Grid.ColumnSpan="2" IsEditable="True"
+                                      ItemsSource="{Binding FontFamilies}" Text="{Binding FontFamily, UpdateSourceTrigger=LostFocus}"/>
+
+                            <TextBlock Grid.Row="1" Style="{StaticResource RowLabel}" Text="{Binding [Settings_TransFontSize], Source={x:Static loc:Loc.Instance}}"/>
+                            <Slider Grid.Row="1" Grid.Column="1" Minimum="12" Maximum="72" Margin="0,8" VerticalAlignment="Center"
+                                    IsSnapToTickEnabled="True" TickFrequency="1" Value="{Binding TranslatedFontSize}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="2" Width="50" TextAlignment="Right" VerticalAlignment="Center"
+                                       Text="{Binding TranslatedFontSize, StringFormat={}{0} px}"/>
+
+                            <TextBlock Grid.Row="2" Style="{StaticResource RowLabel}" Text="{Binding [Settings_OrigFontSize], Source={x:Static loc:Loc.Instance}}"/>
+                            <Slider Grid.Row="2" Grid.Column="1" Minimum="10" Maximum="56" Margin="0,8" VerticalAlignment="Center"
+                                    IsSnapToTickEnabled="True" TickFrequency="1" Value="{Binding OriginalFontSize}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="2" Width="50" TextAlignment="Right" VerticalAlignment="Center"
+                                       Text="{Binding OriginalFontSize, StringFormat={}{0} px}"/>
+
+                            <TextBlock Grid.Row="3" Style="{StaticResource RowLabel}" Text="{Binding [Settings_TransColor], Source={x:Static loc:Loc.Instance}}"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding TranslatedColor, UpdateSourceTrigger=PropertyChanged}"/>
+                            <Button Grid.Row="3" Grid.Column="2" Width="44" Height="32" Margin="8,4,0,4" Tag="TranslatedColor" Click="PickColor_Click"
+                                    Background="{Binding TranslatedColor}" ToolTip="Select color"/>
+
+                            <TextBlock Grid.Row="4" Style="{StaticResource RowLabel}" Text="{Binding [Settings_OrigColor], Source={x:Static loc:Loc.Instance}}"/>
+                            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding OriginalColor, UpdateSourceTrigger=PropertyChanged}"/>
+                            <Button Grid.Row="4" Grid.Column="2" Width="44" Height="32" Margin="8,4,0,4" Tag="OriginalColor" Click="PickColor_Click"
+                                    Background="{Binding OriginalColor}" ToolTip="Select color"/>
+
+                            <TextBlock Grid.Row="5" Style="{StaticResource RowLabel}" Text="{Binding [Settings_BgColor], Source={x:Static loc:Loc.Instance}}"/>
+                            <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding BackgroundColor, UpdateSourceTrigger=PropertyChanged}"/>
+                            <Button Grid.Row="5" Grid.Column="2" Width="44" Height="32" Margin="8,4,0,4" Tag="BackgroundColor" Click="PickColor_Click"
+                                    Background="{Binding BackgroundColor}" ToolTip="Select color"/>
+
+                            <TextBlock Grid.Row="6" Style="{StaticResource RowLabel}" Text="{Binding [Settings_BgOpacity], Source={x:Static loc:Loc.Instance}}"/>
+                            <Slider Grid.Row="6" Grid.Column="1" Minimum="5" Maximum="100" Margin="0,8" VerticalAlignment="Center"
+                                    IsSnapToTickEnabled="True" TickFrequency="1" Value="{Binding BackgroundOpacityPercent}"/>
+                            <TextBlock Grid.Row="6" Grid.Column="2" Width="50" TextAlignment="Right" VerticalAlignment="Center"
+                                       Text="{Binding BackgroundOpacityPercent, StringFormat={}{0}%}"/>
+
+                            <TextBlock Grid.Row="7" Style="{StaticResource RowLabel}" Text="{Binding [Settings_HistoryOpacity], Source={x:Static loc:Loc.Instance}}"
+                                       ToolTip="{Binding [Settings_HistoryOpacity_Tip], Source={x:Static loc:Loc.Instance}}"/>
+                            <Slider Grid.Row="7" Grid.Column="1" Minimum="10" Maximum="100" Margin="0,8" VerticalAlignment="Center"
+                                    IsSnapToTickEnabled="True" TickFrequency="1" Value="{Binding HistoryOpacityPercent}"/>
+                            <TextBlock Grid.Row="7" Grid.Column="2" Width="50" TextAlignment="Right" VerticalAlignment="Center"
+                                       Text="{Binding HistoryOpacityPercent, StringFormat={}{0}%}"/>
+
+                            <CheckBox Grid.Row="8" Grid.Column="1" Margin="0,6,0,2" VerticalAlignment="Center"
+                                      Content="{Binding [Settings_TextShadow], Source={x:Static loc:Loc.Instance}}"
+                                      IsChecked="{Binding TextShadow}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Section 3: Global Hotkeys -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="{Binding [Settings_Sec_Hotkeys], Source={x:Static loc:Loc.Instance}}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Style="{StaticResource RowLabel}" Text="{Binding [Settings_Hotkey_Run], Source={x:Static loc:Loc.Instance}}"/>
+                            <TextBox Grid.Column="1" IsReadOnly="True" Text="{Binding HotkeyToggleRun}"
+                                     PreviewKeyDown="HotkeyBox_PreviewKeyDown" Tag="HotkeyToggleRun"/>
+
+                            <TextBlock Grid.Column="3" Style="{StaticResource RowLabel}" Text="{Binding [Settings_Hotkey_Visible], Source={x:Static loc:Loc.Instance}}"/>
+                            <TextBox Grid.Column="4" IsReadOnly="True" Text="{Binding HotkeyToggleVisible}"
+                                     PreviewKeyDown="HotkeyBox_PreviewKeyDown" Tag="HotkeyToggleVisible"/>
+
+                            <TextBlock Grid.Row="1" Style="{StaticResource RowLabel}" Text="{Binding [Settings_Hotkey_Lock], Source={x:Static loc:Loc.Instance}}"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" IsReadOnly="True" Text="{Binding HotkeyToggleClickThrough}"
+                                     PreviewKeyDown="HotkeyBox_PreviewKeyDown" Tag="HotkeyToggleClickThrough"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="3" Style="{StaticResource RowLabel}" Text="{Binding [Settings_Hotkey_Clear], Source={x:Static loc:Loc.Instance}}"/>
+                            <TextBox Grid.Row="1" Grid.Column="4" IsReadOnly="True" Text="{Binding HotkeyClearHistory}"
+                                     PreviewKeyDown="HotkeyBox_PreviewKeyDown" Tag="HotkeyClearHistory"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Section 4: Gemini API -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="{Binding [Settings_Sec_Api], Source={x:Static loc:Loc.Instance}}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Style="{StaticResource RowLabel}" Text="{Binding [Settings_ApiKey], Source={x:Static loc:Loc.Instance}}"/>
+                            <PasswordBox x:Name="ApiKeyBox" Grid.Column="1" PasswordChanged="ApiKeyBox_PasswordChanged"/>
+
+                            <TextBlock Grid.Row="1" Style="{StaticResource RowLabel}" Text="{Binding [Settings_Model], Source={x:Static loc:Loc.Instance}}"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Model, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <TextBlock Grid.Row="2" Style="{StaticResource RowLabel}" Text="{Binding [Settings_ApiVersion], Source={x:Static loc:Loc.Instance}}"/>
+                            <ComboBox Grid.Row="2" Grid.Column="1" IsEditable="True"
+                                      ItemsSource="{Binding ApiVersions}" Text="{Binding ApiVersion, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <TextBlock Grid.Row="3" Style="{StaticResource RowLabel}" Text="{Binding [Settings_Proxy], Source={x:Static loc:Loc.Instance}}"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding ProxyUrl, UpdateSourceTrigger=PropertyChanged}"
+                                     ToolTip="{Binding [Settings_Proxy_Tip], Source={x:Static loc:Loc.Instance}}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Bottom Action Bar -->
+        <Border Grid.Row="1" Padding="20,12" BorderThickness="0,1,0,0" BorderBrush="#24808080">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="{Binding [Settings_Save], Source={x:Static loc:Loc.Instance}}"
+                        Width="108" Height="34" IsDefault="True" Click="Save_Click" Margin="0,0,10,0"/>
+                <Button Content="{Binding [Settings_Cancel], Source={x:Static loc:Loc.Instance}}"
+                        Width="88" Height="34" IsCancel="True" Click="Cancel_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
