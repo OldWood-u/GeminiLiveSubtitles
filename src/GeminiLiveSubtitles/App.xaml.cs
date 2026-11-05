@@ -68,34 +68,7 @@ public partial class App : System.Windows.Application
         _overlayVm = new OverlayViewModel(_assembler.Entries) { IsLocked = false };
         _overlayVm.ApplyStyle(s);
 
-        _overlay = new OverlayWindow(_overlayVm);
-        if (s.WindowLeft is { } l && s.WindowTop is { } t && s.WindowWidth is { } w && s.WindowHeight is { } h && IsOnScreen(l, t, w, h))
-        {
-            _overlay.Left = l; _overlay.Top = t; _overlay.Width = w; _overlay.Height = h;
-        }
-        else
-        {
-            _overlay.PlaceDefault();
-        }
-        _overlay.ToggleRunRequested += ToggleRun;
-        _overlay.ToggleLockRequested += ToggleLock;
-        _overlay.ToggleVisibleRequested += ToggleVisible;
-        _overlay.LanguageRequested += ChangeLanguage;
-        _overlay.DisplayModeRequested += ChangeDisplayMode;
-        _overlay.SubtitleOrderRequested += ChangeSubtitleOrder;
-        _overlay.SubtitleAlignmentRequested += ChangeSubtitleAlignment;
-        _overlay.ClearHistoryRequested += ClearHistory;
-        _overlay.SettingsRequested += OpenSettings;
-        _overlay.PlacementChanged += SaveWindowPlacement;
-        _overlay.ExitRequested += () => Shutdown();
-        _overlay.Show();
-
-        _hotkeys = new GlobalHotkeyService(_overlay.Handle);
-        _hotkeys.ToggleRunRequested += ToggleRun;
-        _hotkeys.ToggleVisibleRequested += ToggleVisible;
-        _hotkeys.ToggleClickThroughRequested += ToggleLock;
-        _hotkeys.ClearHistoryRequested += ClearHistory;
-        _hotkeys.Apply(s);
+        CreateOverlayWindow(s);
 
         _assembler.Changed += () =>
         {
@@ -338,11 +311,20 @@ public partial class App : System.Windows.Application
 
             var newKey = vm.ApiKey.Trim();
             updated.ProtectedApiKey = newKey == oldKey ? before.ProtectedApiKey : SettingsService.Protect(newKey);
+            bool vrModeChanged = updated.IsVrCaptureMode != before.IsVrCaptureMode;
             _settings.Save(updated);
             I18n.SetLanguage(updated.UiLanguage);
             _assembler.MaxEntries = updated.MaxHistoryEntries;
             _overlayVm.ApplyStyle(updated);
-            _hotkeys?.Apply(updated);
+
+            if (vrModeChanged)
+            {
+                RecreateOverlayWindow(updated);
+            }
+            else
+            {
+                _hotkeys?.Apply(updated);
+            }
 
             bool connectionChanged = newKey != oldKey || updated.Model != before.Model ||
                                      updated.ApiVersion != before.ApiVersion || updated.ProxyUrl != before.ProxyUrl ||
@@ -355,6 +337,68 @@ public partial class App : System.Windows.Application
     }
 
     // ---------------- Helpers ----------------
+
+    private void CreateOverlayWindow(AppSettings s)
+    {
+        _overlay = new OverlayWindow(_overlayVm);
+        if (s.WindowLeft is { } l && s.WindowTop is { } t && s.WindowWidth is { } w && s.WindowHeight is { } h && IsOnScreen(l, t, w, h))
+        {
+            _overlay.Left = l; _overlay.Top = t; _overlay.Width = w; _overlay.Height = h;
+        }
+        else
+        {
+            _overlay.PlaceDefault();
+        }
+        _overlay.ToggleRunRequested += ToggleRun;
+        _overlay.ToggleLockRequested += ToggleLock;
+        _overlay.ToggleVisibleRequested += ToggleVisible;
+        _overlay.LanguageRequested += ChangeLanguage;
+        _overlay.DisplayModeRequested += ChangeDisplayMode;
+        _overlay.SubtitleOrderRequested += ChangeSubtitleOrder;
+        _overlay.SubtitleAlignmentRequested += ChangeSubtitleAlignment;
+        _overlay.ClearHistoryRequested += ClearHistory;
+        _overlay.SettingsRequested += OpenSettings;
+        _overlay.PlacementChanged += SaveWindowPlacement;
+        _overlay.ExitRequested += () => Shutdown();
+        MainWindow = _overlay;
+
+        if (_overlayVisible)
+        {
+            _overlay.Show();
+        }
+
+        _hotkeys?.Dispose();
+        _hotkeys = new GlobalHotkeyService(_overlay.Handle);
+        _hotkeys.ToggleRunRequested += ToggleRun;
+        _hotkeys.ToggleVisibleRequested += ToggleVisible;
+        _hotkeys.ToggleClickThroughRequested += ToggleLock;
+        _hotkeys.ClearHistoryRequested += ClearHistory;
+        _hotkeys.Apply(s);
+    }
+
+    private void RecreateOverlayWindow(AppSettings s)
+    {
+        if (_overlay is not null)
+        {
+            s.WindowLeft = _overlay.Left;
+            s.WindowTop = _overlay.Top;
+            s.WindowWidth = _overlay.Width;
+            s.WindowHeight = _overlay.Height;
+
+            try
+            {
+                _hotkeys?.Dispose();
+                _hotkeys = null;
+                _overlay.Close();
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error closing old overlay window", ex);
+            }
+        }
+
+        CreateOverlayWindow(s);
+    }
 
     private void UpdateTray() =>
         _tray?.Update(_session?.IsRunning ?? false, _overlayVm.IsLocked, _overlayVisible,

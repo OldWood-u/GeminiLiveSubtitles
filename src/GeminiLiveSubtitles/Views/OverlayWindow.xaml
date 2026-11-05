@@ -9,7 +9,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="GeminiLiveSubtitles"
-        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         Topmost="True" ShowInTaskbar="False" ShowActivated="False"
         ResizeMode="NoResize" MinWidth="360" MinHeight="96"
         Width="980" Height="210">
