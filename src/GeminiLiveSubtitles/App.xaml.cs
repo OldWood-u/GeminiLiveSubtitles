@@ -291,8 +291,7 @@ public partial class App : System.Windows.Application
 
         var win = new SettingsWindow(vm)
         {
-            Owner = _overlay,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner
+            WindowStartupLocation = WindowStartupLocation.CenterScreen
         };
         _settingsWindow = win;
         win.Closed += (_, _) =>
@@ -315,20 +314,11 @@ public partial class App : System.Windows.Application
 
             var newKey = vm.ApiKey.Trim();
             updated.ProtectedApiKey = newKey == oldKey ? before.ProtectedApiKey : SettingsService.Protect(newKey);
-            bool vrModeChanged = updated.IsVrCaptureMode != before.IsVrCaptureMode;
             _settings.Save(updated);
             I18n.SetLanguage(updated.UiLanguage);
             _assembler.MaxEntries = updated.MaxHistoryEntries;
             _overlayVm.ApplyStyle(updated);
-
-            if (vrModeChanged)
-            {
-                RecreateOverlayWindow(updated);
-            }
-            else
-            {
-                _hotkeys?.Apply(updated);
-            }
+            _hotkeys?.Apply(updated);
 
             bool connectionChanged = newKey != oldKey || updated.Model != before.Model ||
                                      updated.ApiVersion != before.ApiVersion || updated.ProxyUrl != before.ProxyUrl ||
@@ -378,30 +368,6 @@ public partial class App : System.Windows.Application
         _hotkeys.ToggleClickThroughRequested += ToggleLock;
         _hotkeys.ClearHistoryRequested += ClearHistory;
         _hotkeys.Apply(s);
-    }
-
-    private void RecreateOverlayWindow(AppSettings s)
-    {
-        if (_overlay is not null)
-        {
-            s.WindowLeft = _overlay.Left;
-            s.WindowTop = _overlay.Top;
-            s.WindowWidth = _overlay.Width;
-            s.WindowHeight = _overlay.Height;
-
-            try
-            {
-                _hotkeys?.Dispose();
-                _hotkeys = null;
-                _overlay.Close();
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Error closing old overlay window", ex);
-            }
-        }
-
-        CreateOverlayWindow(s);
     }
 
     private void UpdateTray() =>

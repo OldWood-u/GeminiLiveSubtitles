@@ -8,7 +8,6 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:SettingsViewModel}"
         Title="{Binding [Settings_Title], Source={x:Static loc:Loc.Instance}}"
-        Topmost="True"
         Width="640" Height="730"
         MinWidth="580" MinHeight="540"
         WindowStartupLocation="CenterScreen"

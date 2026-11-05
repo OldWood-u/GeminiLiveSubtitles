@@ -31,33 +31,19 @@ public partial class OverlayWindow : Window
         _vm = vm;
         DataContext = vm;
 
+        // Both standard overlay mode and VR capture mode use borderless transparent window style
+        WindowStyle = WindowStyle.None;
+        AllowsTransparency = true;
+        Background = System.Windows.Media.Brushes.Transparent;
+        ResizeMode = ResizeMode.NoResize;
+
         if (vm.IsVrCaptureMode)
         {
-            // Standard top-level overlapped window for SteamVR capture & enumeration
-            AllowsTransparency = false;
-            WindowStyle = WindowStyle.SingleBorderWindow;
-            ResizeMode = ResizeMode.CanResize;
             ShowInTaskbar = true;
             Title = "GeminiSubtitles - VR";
-            Background = System.Windows.Media.Brushes.Transparent;
-
-            // Remove native title bar while enabling DWM client-area sheet-of-glass composition
-            WindowChrome.SetWindowChrome(this, new WindowChrome
-            {
-                CaptionHeight = 0,
-                ResizeBorderThickness = new Thickness(6),
-                GlassFrameThickness = new Thickness(-1), // Extend DWM glass into client area
-                NonClientFrameEdges = NonClientFrameEdges.None,
-                UseAeroCaptionButtons = false
-            });
         }
         else
         {
-            // Transparent click-through overlay window
-            WindowStyle = WindowStyle.None;
-            AllowsTransparency = true;
-            Background = System.Windows.Media.Brushes.Transparent;
-            ResizeMode = ResizeMode.NoResize;
             ShowInTaskbar = false;
             Title = "GeminiLiveSubtitles";
         }
@@ -224,12 +210,15 @@ public partial class OverlayWindow : Window
     private void ApplyVrCaptureMode(bool enabled)
     {
         Owner = null;
+        ShowInTaskbar = enabled;
+        Title = enabled ? "GeminiSubtitles - VR" : "GeminiLiveSubtitles";
+
         if (_hwnd == 0) return;
 
         if (enabled)
         {
             // VR capture mode: Must NOT have WS_EX_TOOLWINDOW, WS_EX_NOACTIVATE, or WS_EX_TRANSPARENT.
-            // Only add WS_EX_APPWINDOW so SteamVR and Windows treat it as a 100% standard window.
+            // Only add WS_EX_APPWINDOW so SteamVR and Windows treat it as a standard capturable window.
             NativeMethods.SetExStyle(_hwnd,
                 NativeMethods.WS_EX_APPWINDOW,
                 NativeMethods.WS_EX_TOOLWINDOW | NativeMethods.WS_EX_NOACTIVATE | NativeMethods.WS_EX_TRANSPARENT);
