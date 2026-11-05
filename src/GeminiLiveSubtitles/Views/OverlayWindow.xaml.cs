@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Shell;
 using GeminiLiveSubtitles.Interop;
 using GeminiLiveSubtitles.Localization;
 using GeminiLiveSubtitles.Settings;
@@ -38,7 +39,17 @@ public partial class OverlayWindow : Window
             ResizeMode = ResizeMode.CanResize;
             ShowInTaskbar = true;
             Title = "GeminiSubtitles - VR";
-            Background = System.Windows.Media.Brushes.Black;
+            Background = System.Windows.Media.Brushes.Transparent;
+
+            // Remove native title bar while enabling DWM client-area sheet-of-glass composition
+            WindowChrome.SetWindowChrome(this, new WindowChrome
+            {
+                CaptionHeight = 0,
+                ResizeBorderThickness = new Thickness(6),
+                GlassFrameThickness = new Thickness(-1), // Extend DWM glass into client area
+                NonClientFrameEdges = NonClientFrameEdges.None,
+                UseAeroCaptionButtons = false
+            });
         }
         else
         {

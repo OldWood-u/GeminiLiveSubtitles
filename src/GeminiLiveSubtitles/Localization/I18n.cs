@@ -83,7 +83,7 @@ public static class I18n
         ["Settings_HistoryOpacity"] = ("历史句不透明度", "History Opacity"),
         ["Settings_HistoryOpacity_Tip"] = ("上方已说完的历史句子的明暗度", "Brightness of completed history lines above the active line"),
         ["Settings_TextShadow"] = ("启用文字阴影描边（提升复杂背景下的清晰度）", "Enable text drop shadow (enhances legibility on complex backgrounds)"),
-        ["Settings_VrCaptureMode"] = ("VR 捕获模式（任务栏显示 & 纯色背景，兼容 SteamVR 挂载）", "VR Capture Mode (Taskbar visible & solid background for SteamVR)"),
+        ["Settings_VrCaptureMode"] = ("VR 捕获模式（兼容 SteamVR 窗口挂载）", "VR Capture Mode (for SteamVR window pinning)"),
         ["Settings_Sec_Hotkeys"] = ("全局快捷键（点击输入框直接按下组合键，按 Backspace 清除）", "Global Hotkeys (Press hotkey combination directly in box, Backspace to clear)"),
         ["Settings_Hotkey_Run"] = ("开始 / 暂停", "Start / Pause"),
         ["Settings_Hotkey_Visible"] = ("显示 / 隐藏", "Show / Hide"),

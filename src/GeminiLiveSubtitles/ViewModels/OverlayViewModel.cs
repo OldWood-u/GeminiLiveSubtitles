@@ -92,24 +92,12 @@ public sealed partial class OverlayViewModel : ObservableObject
         TranslatedFontSize = Math.Clamp(s.TranslatedFontSize, 8, 120);
         OriginalFontSize = Math.Clamp(s.OriginalFontSize, 8, 120);
 
-        if (s.IsVrCaptureMode)
-        {
-            // In VR capture mode, SteamVR WGC capture requires an opaque solid dark background and high-contrast text.
-            BackgroundBrush = Freeze(new SolidColorBrush(MediaColor.FromArgb(255, 18, 18, 18))); // #FF121212
-            TranslatedBrush = System.Windows.Media.Brushes.White;
-            OriginalBrush = Freeze(new SolidColorBrush(MediaColor.FromArgb(255, 200, 205, 215)));
-            ShadowOpacity = 1;
-        }
-        else
-        {
-            TranslatedBrush = MakeBrush(s.TranslatedColor, Colors.White);
-            OriginalBrush = MakeBrush(s.OriginalColor, Colors.LightGray);
-            var bg = ParseColor(s.BackgroundColor, MediaColor.FromRgb(16, 18, 22));
-            bg.A = (byte)Math.Round(Math.Clamp(s.BackgroundOpacity, 0.05, 1) * 255);
-            BackgroundBrush = Freeze(new SolidColorBrush(bg));
-            ShadowOpacity = s.TextShadow ? 1 : 0;
-        }
-
+        TranslatedBrush = MakeBrush(s.TranslatedColor, Colors.White);
+        OriginalBrush = MakeBrush(s.OriginalColor, Colors.LightGray);
+        var bg = ParseColor(s.BackgroundColor, MediaColor.FromRgb(16, 18, 22));
+        bg.A = (byte)Math.Round(Math.Clamp(s.BackgroundOpacity, 0.05, 1) * 255);
+        BackgroundBrush = Freeze(new SolidColorBrush(bg));
+        ShadowOpacity = s.TextShadow ? 1 : 0;
         HistoryOpacity = Math.Clamp(s.HistoryOpacity, 0.10, 1.0);
     }
 
