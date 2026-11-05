@@ -134,6 +134,7 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <TextBlock Style="{StaticResource RowLabel}" Text="{Binding [Settings_Font], Source={x:Static loc:Loc.Instance}}"/>
@@ -180,9 +181,13 @@
                             <TextBlock Grid.Row="7" Grid.Column="2" Width="50" TextAlignment="Right" VerticalAlignment="Center"
                                        Text="{Binding HistoryOpacityPercent, StringFormat={}{0}%}"/>
 
-                            <CheckBox Grid.Row="8" Grid.Column="1" Margin="0,6,0,2" VerticalAlignment="Center"
+                            <CheckBox Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,6,0,2" VerticalAlignment="Center"
                                       Content="{Binding [Settings_TextShadow], Source={x:Static loc:Loc.Instance}}"
                                       IsChecked="{Binding TextShadow}"/>
+
+                            <CheckBox Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,6,0,2" VerticalAlignment="Center"
+                                      Content="{Binding [Settings_VrCaptureMode], Source={x:Static loc:Loc.Instance}}"
+                                      IsChecked="{Binding IsVrCaptureMode}"/>
                         </Grid>
                     </StackPanel>
                 </Border>

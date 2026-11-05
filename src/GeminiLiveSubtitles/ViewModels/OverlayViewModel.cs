@@ -46,6 +46,7 @@ public sealed partial class OverlayViewModel : ObservableObject
     [ObservableProperty] private System.Windows.Media.Brush _backgroundBrush = new SolidColorBrush(MediaColor.FromArgb(184, 16, 18, 22));
     [ObservableProperty] private double _historyOpacity = 0.50;
     [ObservableProperty] private double _shadowOpacity = 1;
+    [ObservableProperty] private bool _isVrCaptureMode;
 
     public bool ShowOriginal => DisplayMode != DisplayMode.TranslationOnly;
     public bool ShowTranslated => DisplayMode != DisplayMode.OriginalOnly;
@@ -86,16 +87,30 @@ public sealed partial class OverlayViewModel : ObservableObject
         SubtitleOrder = s.SubtitleOrder;
         SubtitleAlignment = s.SubtitleAlignment;
         TargetLanguage = s.TargetLanguage;
+        IsVrCaptureMode = s.IsVrCaptureMode;
         try { FontFamily = new MediaFontFamily(s.FontFamily); } catch { /* keep previous */ }
         TranslatedFontSize = Math.Clamp(s.TranslatedFontSize, 8, 120);
         OriginalFontSize = Math.Clamp(s.OriginalFontSize, 8, 120);
-        TranslatedBrush = MakeBrush(s.TranslatedColor, Colors.White);
-        OriginalBrush = MakeBrush(s.OriginalColor, Colors.LightGray);
-        var bg = ParseColor(s.BackgroundColor, MediaColor.FromRgb(16, 18, 22));
-        bg.A = (byte)Math.Round(Math.Clamp(s.BackgroundOpacity, 0.05, 1) * 255);
-        BackgroundBrush = Freeze(new SolidColorBrush(bg));
+
+        if (s.IsVrCaptureMode)
+        {
+            // In VR capture mode, SteamVR WGC capture requires an opaque solid dark background and high-contrast text.
+            BackgroundBrush = Freeze(new SolidColorBrush(MediaColor.FromArgb(255, 18, 18, 18))); // #FF121212
+            TranslatedBrush = System.Windows.Media.Brushes.White;
+            OriginalBrush = Freeze(new SolidColorBrush(MediaColor.FromArgb(255, 200, 205, 215)));
+            ShadowOpacity = 1;
+        }
+        else
+        {
+            TranslatedBrush = MakeBrush(s.TranslatedColor, Colors.White);
+            OriginalBrush = MakeBrush(s.OriginalColor, Colors.LightGray);
+            var bg = ParseColor(s.BackgroundColor, MediaColor.FromRgb(16, 18, 22));
+            bg.A = (byte)Math.Round(Math.Clamp(s.BackgroundOpacity, 0.05, 1) * 255);
+            BackgroundBrush = Freeze(new SolidColorBrush(bg));
+            ShadowOpacity = s.TextShadow ? 1 : 0;
+        }
+
         HistoryOpacity = Math.Clamp(s.HistoryOpacity, 0.10, 1.0);
-        ShadowOpacity = s.TextShadow ? 1 : 0;
     }
 
     internal static MediaColor ParseColor(string? text, MediaColor fallback)

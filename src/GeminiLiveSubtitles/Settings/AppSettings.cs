@@ -58,6 +58,8 @@ public sealed class AppSettings
     public double? WindowHeight { get; set; }
     /// <summary>Click-through mode. Off by default so the window can be dragged, resized and right-clicked directly.</summary>
     public bool Locked { get; set; } = false;
+    /// <summary>VR capture mode with opaque dark solid background, taskbar presence, and fixed overlay window for SteamVR capture.</summary>
+    public bool IsVrCaptureMode { get; set; } = false;
 
     // ---- Hotkeys (e.g. "Alt+S", empty to disable) ----
     public string HotkeyToggleRun { get; set; } = "Alt+S";

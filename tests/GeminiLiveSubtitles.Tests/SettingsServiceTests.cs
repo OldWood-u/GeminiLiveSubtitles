@@ -20,6 +20,7 @@ public class SettingsServiceTests : IDisposable
         Assert.Equal("zh-CN", svc.Current.TargetLanguage);
         Assert.Equal("gemini-3.5-live-translate-preview", svc.Current.Model);
         Assert.Equal(DisplayMode.Bilingual, svc.Current.DisplayMode);
+        Assert.False(svc.Current.IsVrCaptureMode);
     }
 
     [Fact]
@@ -31,18 +32,21 @@ public class SettingsServiceTests : IDisposable
         s.DisplayMode = DisplayMode.TranslationOnly;
         s.BackgroundOpacity = 0.6;
         s.HistoryOpacity = 0.42;
+        s.IsVrCaptureMode = true;
         s.ProtectedApiKey = SettingsService.Protect("secret-key-123");
         svc.Save(s);
 
         var raw = File.ReadAllText(Path.Combine(_dir, "settings.json"));
         Assert.DoesNotContain("secret-key-123", raw);
         Assert.Contains("TranslationOnly", raw);
+        Assert.Contains("\"IsVrCaptureMode\": true", raw);
 
         var reloaded = new SettingsService(_dir);
         Assert.Equal("ja", reloaded.Current.TargetLanguage);
         Assert.Equal(DisplayMode.TranslationOnly, reloaded.Current.DisplayMode);
         Assert.Equal(0.6, reloaded.Current.BackgroundOpacity);
         Assert.Equal(0.42, reloaded.Current.HistoryOpacity);
+        Assert.True(reloaded.Current.IsVrCaptureMode);
         Assert.Equal("secret-key-123", reloaded.GetApiKey());
     }
 

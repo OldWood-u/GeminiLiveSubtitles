@@ -60,8 +60,7 @@ public partial class OverlayWindow : Window
     {
         base.OnSourceInitialized(e);
         _hwnd = new WindowInteropHelper(this).Handle;
-        // Hide from Alt+Tab; do not steal activation from fullscreen games/videos.
-        NativeMethods.SetExStyle(_hwnd, NativeMethods.WS_EX_TOOLWINDOW | NativeMethods.WS_EX_NOACTIVATE, 0);
+        ApplyVrCaptureMode(_vm.IsVrCaptureMode);
         ApplyLock(_vm.IsLocked);
     }
 
@@ -174,6 +173,7 @@ public partial class OverlayWindow : Window
     private void OnVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(OverlayViewModel.IsLocked)) ApplyLock(_vm.IsLocked);
+        else if (e.PropertyName == nameof(OverlayViewModel.IsVrCaptureMode)) ApplyVrCaptureMode(_vm.IsVrCaptureMode);
     }
 
     private void ApplyLock(bool locked)
@@ -183,6 +183,32 @@ public partial class OverlayWindow : Window
             NativeMethods.SetExStyle(_hwnd, NativeMethods.WS_EX_TRANSPARENT | NativeMethods.WS_EX_LAYERED, 0);
         else
             NativeMethods.SetExStyle(_hwnd, 0, NativeMethods.WS_EX_TRANSPARENT);
+    }
+
+    private void ApplyVrCaptureMode(bool enabled)
+    {
+        // Standalone top-level window configuration
+        Owner = null;
+        ShowInTaskbar = enabled;
+        Title = enabled ? "GeminiSubtitles - VR" : "GeminiLiveSubtitles";
+
+        if (_hwnd == 0) return;
+
+        if (enabled)
+        {
+            // VR capture mode: remove WS_EX_TOOLWINDOW and add WS_EX_APPWINDOW
+            // so SteamVR and Windows taskbar can enumerate and capture it cleanly.
+            NativeMethods.SetExStyle(_hwnd,
+                NativeMethods.WS_EX_APPWINDOW | NativeMethods.WS_EX_NOACTIVATE,
+                NativeMethods.WS_EX_TOOLWINDOW);
+        }
+        else
+        {
+            // Standard overlay mode: tool window hidden from Alt+Tab and taskbar.
+            NativeMethods.SetExStyle(_hwnd,
+                NativeMethods.WS_EX_TOOLWINDOW | NativeMethods.WS_EX_NOACTIVATE,
+                NativeMethods.WS_EX_APPWINDOW);
+        }
     }
 
     /// <summary>

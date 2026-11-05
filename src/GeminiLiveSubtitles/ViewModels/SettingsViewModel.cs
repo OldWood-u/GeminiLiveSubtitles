@@ -32,6 +32,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         _backgroundOpacityPercent = Math.Round(current.BackgroundOpacity * 100);
         _historyOpacityPercent = Math.Round(current.HistoryOpacity * 100);
         _textShadow = current.TextShadow;
+        _isVrCaptureMode = current.IsVrCaptureMode;
         _hotkeyToggleRun = current.HotkeyToggleRun;
         _hotkeyToggleVisible = current.HotkeyToggleVisible;
         _hotkeyToggleClickThrough = current.HotkeyToggleClickThrough;
@@ -90,6 +91,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private double _backgroundOpacityPercent;
     [ObservableProperty] private double _historyOpacityPercent;
     [ObservableProperty] private bool _textShadow;
+    [ObservableProperty] private bool _isVrCaptureMode;
     [ObservableProperty] private string _hotkeyToggleRun;
     [ObservableProperty] private string _hotkeyToggleVisible;
     [ObservableProperty] private string _hotkeyToggleClickThrough;
@@ -132,6 +134,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.BackgroundOpacity = Math.Clamp(BackgroundOpacityPercent / 100.0, 0.05, 1);
         s.HistoryOpacity = Math.Clamp(HistoryOpacityPercent / 100.0, 0.10, 1.0);
         s.TextShadow = TextShadow;
+        s.IsVrCaptureMode = IsVrCaptureMode;
         s.HotkeyToggleRun = HotkeyToggleRun.Trim();
         s.HotkeyToggleVisible = HotkeyToggleVisible.Trim();
         s.HotkeyToggleClickThrough = HotkeyToggleClickThrough.Trim();
