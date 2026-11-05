@@ -344,7 +344,7 @@ public partial class OverlayWindow : Window
         var clearItem = new MenuItem { Header = "清空字幕历史", InputGestureText = "Alt+C" };
         clearItem.Click += (_, _) => ClearHistoryRequested?.Invoke();
 
-        var lockItem = new MenuItem { Header = "鼠标穿透模式", InputGestureText = "Alt+T", IsCheckable = true };
+        var lockItem = new MenuItem { Header = "鼠标穿透模式", InputGestureText = "Alt+T" };
         lockItem.Click += (_, _) => ToggleLockRequested?.Invoke();
 
         var hideItem = new MenuItem { Header = "隐藏字幕窗口", InputGestureText = "Alt+H" };
@@ -385,7 +385,9 @@ public partial class OverlayWindow : Window
             alignCenter.Header = I18n.Get("Menu_AlignCenter");
             copyItem.Header = I18n.Get("Menu_CopyHistory");
             clearItem.Header = I18n.Get("Menu_ClearHistory");
-            lockItem.Header = I18n.Get("Menu_ClickThrough");
+            lockItem.Header = _vm.IsLocked
+                ? $"{I18n.Get("Menu_ClickThrough")}  ✓"
+                : I18n.Get("Menu_ClickThrough");
             hideItem.Header = I18n.Get(IsVisible ? "Menu_HideWindow" : "Menu_ShowWindow");
             settingsItem.Header = I18n.Get("Menu_Settings");
             exitItem.Header = I18n.Get("Menu_Exit");
@@ -407,7 +409,6 @@ public partial class OverlayWindow : Window
             origFirst.IsChecked = _vm.SubtitleOrder == SubtitleOrder.OriginalFirst;
             alignLeft.IsChecked = _vm.SubtitleAlignment == SubtitleAlignment.Left;
             alignCenter.IsChecked = _vm.SubtitleAlignment == SubtitleAlignment.Center;
-            lockItem.IsChecked = _vm.IsLocked;
             copyItem.IsEnabled = _vm.Entries.Count > 0;
             clearItem.IsEnabled = _vm.Entries.Count > 0;
         };

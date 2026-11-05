@@ -289,7 +289,11 @@ public partial class App : System.Windows.Application
         var vm = new SettingsViewModel(before, oldKey);
         vm.PreviewRequested += preview => _overlayVm.ApplyStyle(preview);
 
-        var win = new SettingsWindow(vm);
+        var win = new SettingsWindow(vm)
+        {
+            Owner = _overlay,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner
+        };
         _settingsWindow = win;
         win.Closed += (_, _) =>
         {
