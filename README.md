@@ -51,6 +51,9 @@ flowchart LR
   - Modes: Bilingual, Translation-Only, or Original-Only.
   - Custom font family, font sizes, text colors, background color, background opacity, and text drop shadow.
   - Native Windows Fluent dark and light mode adaptation (`ThemeMode="System"`).
+- **VR & VRChat Support**:
+  - **PC Mode (Desktop)**: Use directly without extra setup; the borderless topmost window floats naturally above your desktop game.
+  - **VR Mode (SteamVR)**: Enable **"VR Capture Mode"** in Settings. This exposes `GeminiSubtitles - VR` as an independent standard capturable window, allowing you to easily pin the live subtitle overlay to your controller or in-world view via SteamVR's **"Add Desktop Window"** (`+`).
 - **Multi-Language UI (i18n)**: Supports English, Simplified Chinese (简体中文), and Auto-detection based on system UI culture.
 - **Global Hotkeys**:
   - `Alt+S`: Start / Pause translation
@@ -68,7 +71,7 @@ flowchart LR
 - A Gemini API Key from [Google AI Studio](https://aistudio.google.com/)
 
 #### Download & Run
-1. Go to [Releases](https://github.com/OldWood-u/GeminiLiveSubtitles/releases) and download the latest `GeminiLiveSubtitles-v1.0.0-win-x64.zip` (or `GeminiLiveSubtitles.exe`).
+1. Go to [Releases](https://github.com/OldWood-u/GeminiLiveSubtitles/releases) and download the latest `GeminiLiveSubtitles-v1.0.1-win-x64.zip` (or `GeminiLiveSubtitles.exe`).
 2. Extract and launch `GeminiLiveSubtitles.exe`.
 3. On first launch, the Settings window opens automatically. Paste your Gemini API Key and click **Save**.
 4. Play any audio or video on your PC, and enjoy real-time translation!
@@ -102,6 +105,9 @@ flowchart LR
   - 窗口任意位置均可按住左键拖动；支持四周与四角 8 方向直接拉伸调整大小。
   - 平时纯净无干扰，仅在**鼠标悬停**时显示右上角药丸按钮栏；**在字幕上直接右键**即可弹出完整配置菜单。
   - 支持快捷键一键开启**鼠标穿透模式**（`Alt+T`）。
+- **VRChat 与 VR 场景适配**：
+  - **PC 桌面模式**：无需任何额外配置，直接打开软件即可作为置顶悬浮窗叠加在游戏画面上方使用。
+  - **VR 模式（SteamVR）**：在设置中开启「**VR 捕获模式（兼容 SteamVR 窗口挂载）**」选项。开启后字幕窗口将切换为可被 SteamVR 识别的独立捕获窗口（标题为 `GeminiSubtitles - VR`），即可在 SteamVR 仪表盘中点击 **添加桌面窗口 (+)** 轻松将字幕挂载在手腕、手柄或固定在视野下方。
 - **多语言本地化 (i18n)**：全界面支持简体中文与 English，可自动跟随系统或在设置中手动切换。
 - **个性化视觉定制**：
   - 支持切换「**译文在上 · 原文在下**」或「**原文在上 · 译文在下**」。
